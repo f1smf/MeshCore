@@ -3,6 +3,10 @@
 
 #include "MyMesh.h"
 
+#ifdef CRT_DEBUG_UART
+  #include "CRT_UARTDebug.h"
+#endif
+
 #ifdef DISPLAY_CLASS
   #include "UITask.h"
   static UITask ui_task(board, display);
@@ -16,7 +20,16 @@
 StdRNG fast_rng;
 SimpleMeshTables tables;
 
+#ifdef CRT_RTC_ENABLED
+  #include "CRT_RTCClock.h"
+  CRT_RTCClock crt_clock(rtc_clock);
+#endif
+
+#ifdef CRT_RTC_ENABLED
+MyMesh the_mesh(board, radio_driver, *new ArduinoMillis(), fast_rng, crt_clock, tables);
+#else
 MyMesh the_mesh(board, radio_driver, *new ArduinoMillis(), fast_rng, rtc_clock, tables);
+#endif
 
 void halt() {
   while (1) ;
@@ -39,7 +52,15 @@ void setup() {
   Serial.begin(115200);
   delay(1000);
 
+#ifdef CRT_DEBUG_UART
+  crt_debug_uart_begin();
+#endif
+
   board.begin();
+
+#ifdef CRT_RTC_ENABLED
+  crt_clock.begin(Wire);
+#endif
 
 #ifdef HAS_EXTERNAL_WATCHDOG
   external_watchdog.begin();
@@ -190,7 +211,12 @@ void loop() {
 #ifdef DISPLAY_CLASS
   ui_task.loop();
 #endif
+
+#ifdef CRT_RTC_ENABLED
+  crt_clock.tick();
+#else
   rtc_clock.tick();
+#endif
 
 #ifdef HAS_EXTERNAL_WATCHDOG
   external_watchdog.loop();

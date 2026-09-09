@@ -24,17 +24,27 @@
 
 #if MESH_DEBUG && ARDUINO
   #include <Arduino.h>
-  #define MESH_DEBUG_PRINT(F, ...) Serial.printf("DEBUG: " F, ##__VA_ARGS__)
-  #define MESH_DEBUG_PRINTLN(F, ...) Serial.printf("DEBUG: " F "\n", ##__VA_ARGS__)
+  #ifdef CRT_DEBUG_UART
+    void crt_debug_mirror(const char* fmt, ...);
+    #define MESH_DEBUG_PRINT(F, ...) crt_debug_mirror("DEBUG: " F, ##__VA_ARGS__)
+    #define MESH_DEBUG_PRINTLN(F, ...) crt_debug_mirror("DEBUG: " F "\n", ##__VA_ARGS__)
+  #else
+    #define MESH_DEBUG_PRINT(F, ...) Serial.printf("DEBUG: " F, ##__VA_ARGS__)
+    #define MESH_DEBUG_PRINTLN(F, ...) Serial.printf("DEBUG: " F "\n", ##__VA_ARGS__)
+  #endif
 #else
   #define MESH_DEBUG_PRINT(...) {}
   #define MESH_DEBUG_PRINTLN(...) {}
 #endif
 
 #if BRIDGE_DEBUG && ARDUINO
-#define BRIDGE_DEBUG_PRINTLN(F, ...) Serial.printf("%s BRIDGE: " F, getLogDateTime(), ##__VA_ARGS__)
+  #ifdef CRT_DEBUG_UART
+    #define BRIDGE_DEBUG_PRINTLN(F, ...) crt_debug_mirror("%s BRIDGE: " F, getLogDateTime(), ##__VA_ARGS__)
+  #else
+    #define BRIDGE_DEBUG_PRINTLN(F, ...) Serial.printf("%s BRIDGE: " F, getLogDateTime(), ##__VA_ARGS__)
+  #endif
 #else
-#define BRIDGE_DEBUG_PRINTLN(...) {}
+  #define BRIDGE_DEBUG_PRINTLN(...) {}
 #endif
 
 namespace mesh {

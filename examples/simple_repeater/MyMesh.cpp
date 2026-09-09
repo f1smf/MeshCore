@@ -145,7 +145,7 @@ uint8_t MyMesh::handleLoginReq(const mesh::Identity& sender, const uint8_t* secr
 }
 
 uint8_t MyMesh::handleAnonRegionsReq(const mesh::Identity& sender, uint32_t sender_timestamp, const uint8_t* data) {
-  if (anon_limiter.allow(rtc_clock.getCurrentTime())) {
+  if (anon_limiter.allow(getRTCClock()->getCurrentTime())) {
     // request data has: {reply-path-len}{reply-path}
     reply_path_len = *data++;
     if (!mesh::Packet::isValidPathLen(reply_path_len)) return 0;  // reject - bad encoding
@@ -163,7 +163,7 @@ uint8_t MyMesh::handleAnonRegionsReq(const mesh::Identity& sender, uint32_t send
 }
 
 uint8_t MyMesh::handleAnonOwnerReq(const mesh::Identity& sender, uint32_t sender_timestamp, const uint8_t* data) {
-  if (anon_limiter.allow(rtc_clock.getCurrentTime())) {
+  if (anon_limiter.allow(getRTCClock()->getCurrentTime())) {
     // request data has: {reply-path-len}{reply-path}
     reply_path_len = *data++;
     if (!mesh::Packet::isValidPathLen(reply_path_len)) return 0;  // reject - bad encoding
@@ -182,7 +182,7 @@ uint8_t MyMesh::handleAnonOwnerReq(const mesh::Identity& sender, uint32_t sender
 }
 
 uint8_t MyMesh::handleAnonClockReq(const mesh::Identity& sender, uint32_t sender_timestamp, const uint8_t* data) {
-  if (anon_limiter.allow(rtc_clock.getCurrentTime())) {
+  if (anon_limiter.allow(getRTCClock()->getCurrentTime())) {
     // request data has: {reply-path-len}{reply-path}
     reply_path_len = *data++;
     if (!mesh::Packet::isValidPathLen(reply_path_len)) return 0;  // reject - bad encoding
@@ -789,7 +789,7 @@ bool MyMesh::onPeerPathRecv(mesh::Packet *packet, int sender_idx, const uint8_t 
 void MyMesh::onControlDataRecv(mesh::Packet* packet) {
   uint8_t type = packet->payload[0] & 0xF0;    // just test upper 4 bits
   if (type == CTL_TYPE_NODE_DISCOVER_REQ && packet->payload_len >= 6
-      && !_prefs.disable_fwd && discover_limiter.allow(rtc_clock.getCurrentTime())
+      && !_prefs.disable_fwd && discover_limiter.allow(getRTCClock()->getCurrentTime())
   ) {
     int i = 1;
     uint8_t  filter = packet->payload[i++];
@@ -838,7 +838,7 @@ void MyMesh::onControlDataRecv(mesh::Packet* packet) {
     if (id.matches(self_id)) {
       return;
     }
-    putNeighbour(id, rtc_clock.getCurrentTime(), packet->getSNR());
+    putNeighbour(id, getRTCClock()->getCurrentTime(), packet->getSNR());
   }
 }
 
